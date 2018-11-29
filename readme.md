@@ -65,9 +65,9 @@ This is what we send to the server as a POST body. Then the server will parse it
 ```
 
 #### Operations
-_**`QUERY`**_ ==>       RETRIEVE DATA (GET) but sent as POST
-_**`MUTATION`**_ ==>    CHANGE DATA (POST, PUT, PATCH, DELETE) but sent as POST
-_**`MUTATION`**_ ==>    Setup real time connection via web sockets.
+_**`QUERY`**_ ==>       RETRIEVE DATA (GET) but sent as POST  
+_**`MUTATION`**_ ==>    CHANGE DATA (POST, PUT, PATCH, DELETE) but sent as POST  
+_**`MUTATION`**_ ==>    Setup real time connection via web sockets.  
 
 #### Graph QL BIGGER PICTURE.
 * We have Client,
