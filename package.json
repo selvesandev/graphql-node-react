@@ -1,0 +1,27 @@
+{
+  "name": "graphql-node-react",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/selvesandev/graphql-node-react.git"
+  },
+  "author": "dev.selvesan@gmail.com",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/selvesandev/graphql-node-react/issues"
+  },
+  "homepage": "https://github.com/selvesandev/graphql-node-react#readme",
+  "dependencies": {
+    "express": "^4.16.4",
+    "express-graphql": "^0.7.1",
+    "graphql": "^14.1.1"
+  },
+  "devDependencies": {
+    "nodemon": "^1.18.9"
+  }
+}

@@ -76,3 +76,42 @@ _**`MUTATION`**_ ==>    Setup real time connection via web sockets.
 * We have some types definition because Graph QL is basically a typed language. (it is not a programming language but
 since it is evolved by facebook and uses types so we are very clear about which types of data is returned from a given endpoint)
 * We have resolvers which contains your server side coding.
+
+
+
+## Project Starts Here.
+#### Node quick setup.
+`npm init` to generate a json file.  
+`npm install --save express` to install the express framework.  
+`npm install --save-dev nodemon` Node monitor.
+
+```
+const express = require('express');
+
+const app = express();
+app.use(express.json());
+
+app.get('/', (req, res, next) => {
+    res.send("Hello world");
+});
+app.listen(3002);
+```
+
+### Graph QL Setup.
+`npm install --save express-graphql` package that can be used as a middleware which allows us to point out at schema, or resolvers
+and automatically connect all of that for us.
+
+`npm install --save graphql` Allows us to define the schema that follows the special graph ql definitions. It will parse our schema which we can use in our 
+express application. 
+
+```
+const graphQlHttp = require('express-graphql'); // This is a function we use as a middleware
+
+app.use('/graphql', graphQlHttp({
+    schema: null,//This will point to a valid graph ql schema. We will be able to generate this with the help of express-graphql.
+    rootValue: {
+        //This is an object which has all the resolver functions in it.
+        //And these resolver functions need to match our schema endpoints by name.
+    }
+}));
+```
