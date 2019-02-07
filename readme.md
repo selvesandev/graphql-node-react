@@ -97,21 +97,183 @@ app.get('/', (req, res, next) => {
 app.listen(3002);
 ```
 
-### Graph QL Setup.
-`npm install --save express-graphql` package that can be used as a middleware which allows us to point out at schema, or resolvers
+### Graph QL Setup. The Core IDEA.
+> GraphQL On Action  
+
+
+`npm install --save express-graphql`   
+package that can be used as a middleware which allows us to point out at schema, or resolvers
 and automatically connect all of that for us.
 
-`npm install --save graphql` Allows us to define the schema that follows the special graph ql definitions. It will parse our schema which we can use in our 
-express application. 
+`npm install --save graphql`   
+Allows us to define the schema that follows the special graph ql definitions. It will parse 
+our schema which we can use in our express application. 
 
 ```
 const graphQlHttp = require('express-graphql'); // This is a function we use as a middleware
 
 app.use('/graphql', graphQlHttp({
-    schema: null,//This will point to a valid graph ql schema. We will be able to generate this with the help of express-graphql.
-    rootValue: {
-        //This is an object which has all the resolver functions in it.
-        //And these resolver functions need to match our schema endpoints by name.
-    }
+    // Here..
 }));
 ```
+
+The graphQl middleware expects two keys inside it as an object.
+```
+app.use('/graphql', graphQlHttp({
+    schema: null,
+}));
+```
+The schema is generated with the help of `express-graphql` for now it is just null.    
+  
+The other key is `rootValue` key which will point to an js object which will have all the resolver function in it.
+The resolver function need to match our schema endpoints by name.
+```
+app.use('/graphql', graphQlHttp({
+    rootValue: {},
+}));
+```
+Now we are almost ready to make our graph ql api work.
+
+##### Adding a schema. 
+For this we will first require `graphql` and get the `buildSchema` from it by es6 object destructuring.
+```
+const {buildSchema} = require('graphql'); // # The buildSchema is a function which will accept a template literal.
+```
+
+The `builSchema` is a function that will take the javascript string literal which will be then used to define schema.
+```
+app.use('/graphql', graphQlHttp({
+    schema: buildSchema(`
+        schema {
+            query: 
+            mutation: 
+        }
+    `)
+}));
+```
+The `buildSchema` contains a `schema` which will have two 
+keywords properties defined inside it the `query` and the `mutation`.  
+`query` meaning we want to receive the data.  
+`mutation` meaning we want to change the data meaning (updating,deleting or inserting).  
+There are subscriptions as well we will use them later.
+
+> Remember the `schema` `query` and `mutaion` is a key work of graph ql specification. 
+
+
+The buildSchema also creates a `type` with a name here `RootQuery` you can name it any thing you want which is also an object.
+This is where we construct different endpoints for incoming queries. and we will also do the same for our mutation here `RootMutation`
+```
+app.use('/graphql', graphQlHttp({
+    schema: buildSchema(`
+        type RootQuery {
+        }
+        
+        type RootMutation {
+        }
+        
+        schema {
+            query: RootQuery
+            mutation: RootMutation
+        }
+    `),
+}));
+```
+Now we can add as many queries and mutation as we want.  
+
+**Creating a query `events` that will send a list of data**
+```
+app.use('/graphql', graphQlHttp({
+    schema: buildSchema(`
+        type RootQuery {
+            events:[String!]!
+        }     
+    `)
+}));
+
+```
+Now we have a query `events` which returns a list of string. Graph ql is a typed language
+therefore we should specify the data types. `String`,`Integer`,`Float`,`Boolean` etch are some of the types that it supports.
+the `!` sign represents it cannot be null. 
+
+**Creating mutation where we can update data this is generally a name for a function**
+```
+app.use('/graphql', graphQlHttp({
+    schema: buildSchema(`
+        type RootMutation {
+            createEvent(name: String):String
+        }
+        
+        schema {
+            query: RootQuery
+            mutation: RootMutation
+        }
+    `)
+}));
+```
+Here we have a function `createEvent` which accepts a string and returns a string.  
+Now we have these two commands for `RootQuery` and `RootMutation` that our graph ql api should support.  
+
+  
+Still we have no logic to interact with the defined `commands` i.e to request a list of data and to create a event.
+We add this logic in the `rootValue` property which is called a resolver.
+  
+The resolvers for your command `events` and `createEvent` must have the exact same name.  
+```
+app.use('/graphql', graphQlHttp({
+    schema: buildSchema(`
+        type RootQuery {
+            events:[String!]!
+        }
+        
+        type RootMutation {
+            createEvent(name: String):String
+        }
+        
+        schema {
+            query: RootQuery
+            mutation: RootMutation
+        }
+    `),
+    rootValue: {
+        events: () => {
+            return ['Romantic Cooking', ' Sailing', 'All Night Coding'];
+        },
+        createEvent: (args) => {
+            return args.name;
+        }
+    }
+}));
+``` 
+The resolver is just a function that returns a object. Here we have created two
+resolvers   
+* one for the `events` query which will trigger for the `events` query that return a list of strings
+* one for the `createEvent` mutation that returns the value passed to it. The `args` received by the resolver `createEvent: (args)`
+is the object of value sent.
+
+We can test these all by unlocking the third property we passed to `graphQlHttp` object i.e `graphiql`:`true`.
+```
+app.use('/graphql', graphQlHttp({
+    schema: buildSchema(
+    `),
+    rootValue: {
+    },
+    graphiql: true
+}));
+
+```
+Now you can test this with the `localhost:3000/graphql`.
+
+* Test the query.
+```
+query {
+    events
+} // Will returs the list of string that we have built
+```
+
+* Test the mutation.
+```
+mutation {
+    createEvent(name: "Selvesan")
+}
+```
+
