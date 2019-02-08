@@ -277,3 +277,114 @@ mutation {
 }
 ```
 
+### Types
+Till now we have a `RootQuery` with `events` which is the single endpoint we have, `RootMutation` in which `createEvent` for storing data and a resolver function in `rootValue` we return a dummy data and echo dummy data you want to store.
+###### Defining a custom type.
+```
+
+app.use('/graphql', graphQlHttp({
+    schema: buildSchema(`
+        type Event {
+            _id: ID!
+            title:String!
+            description:String!
+            price:Float!
+            date:String!
+        }
+    `)
+}));
+``` 
+Here we have created a `Event type`. Every events needs a `ID!` the exclamation marks make it non nullable which make the `_id` a key specifier.  
+  
+Now lets modify our `RootQuery` so that it returns the `Event` object instead of string which it does now.
+
+```
+app.use('/graphql', graphQlHttp({
+    schema: buildSchema(`
+        type Event {
+            _id: ID!
+            title:String!
+            description:String!
+            price:Float!
+            date:String!
+        }
+        
+        type RootQuery {
+            events:[Event!]!
+        }
+    `)
+}));
+```
+We also want to return the event when we create it so modifying the `RootMutation` as well.
+```
+type RootMutation {
+    createEvent(name: String):Event
+}
+```
+Creating a `input` type which is used as our mutation `createEvent` argument placeholder.
+```
+
+input EventInput {
+    title:String!
+    description:String!
+    price:Float!
+    date:String!
+}
+
+type RootMutation {
+    createEvent(eventInput: EventInput):Event
+}
+```
+Now lets use these definitions in our resolver function.
+```
+const events=[];//defined globally
+
+    rootValue: {
+        events: () => {
+            return events;
+        },
+        createEvent: (args) => {
+            const event = {
+                _id: Math.random().toString(),
+                title: args.eventInput.title,
+                description: args.eventInput.description,
+                price: +args.eventInput.price,
+                date: new Date().toISOString()
+            };
+            events.push(event);
+            return event;
+        }
+    },
+```
+Now lets query the events from our graph ql UI. `localhost:3002/graphql`
+```
+query {
+  events {
+    title
+    price
+  }
+}
+```
+Now you can specify which part of the api that you want here I only need the title and the price.
+  
+  
+
+  
+Now lets create our data with the `createEvent` mutaion.
+```
+mutation{
+  createEvent(eventInput:{
+    title:"My new Event",
+    description:"Check if this works",
+    price:10.22,
+    date:"2012-12-12"
+  }){
+    title
+    price
+    description
+  }
+}
+```
+The above createEvent mutation is called with a payload also after the `createEvent` mutation is called we are also
+retrieving the `title`,`price`,`description` that is sent as the response.
+

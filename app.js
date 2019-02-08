@@ -4,15 +4,33 @@ const {buildSchema} = require('graphql'); // # The buildSchema is a function whi
 
 const app = express();
 app.use(express.json());
+
+const events = [];
 app.use('/graphql', graphQlHttp({
     schema: buildSchema(`
+        type Event {
+            _id: ID!
+            title:String!
+            description:String!
+            price:Float!
+            date:String!
+        }
+        
         type RootQuery {
-            events:[String!]!
+            events:[Event!]!
+        }
+        
+        input EventInput {
+            title:String!
+            description:String!
+            price:Float!
+            date:String!
         }
         
         type RootMutation {
-            createEvent(name: String):String
+            createEvent(eventInput: EventInput):Event
         }
+        
         
         schema {
             query: RootQuery
@@ -24,10 +42,19 @@ app.use('/graphql', graphQlHttp({
         //This is an object which has all the resolver functions in it.
         //And these resolver functions need to match our schema endpoints by name.
         events: () => {
-            return ['Romantic Cooking', ' Sailing', 'All Night Coding'];
+            return events;
         },
         createEvent: (args) => {
-            return args.name;
+
+            const event = {
+                _id: Math.random().toString(),
+                title: args.eventInput.title,
+                description: args.eventInput.description,
+                price: +args.eventInput.price,
+                date: new Date().toISOString()
+            };
+            events.push(event);
+            return event;
         }
     },
     graphiql: true
